@@ -52,9 +52,12 @@ AudioHub 是一个使用 PyQt5 构建的多功能桌面音频管理工具，旨�
 
 1. **下载程序**
 - 前往 [**Releases 页面**](https://github.com/CCYellowStar2/AudioHub/releases/latest)。
-- 在 "Assets" 部分，下载适用于您操作系统的运行程序 (例如 `AudioHub.exe`)。
+- 在 "Assets" 部分，下载适用于您操作系统的压缩包 (例如 `AudioHub-Windows.zip`)。
 
-2. **运行程序**
+2. **解压文件**
+- 将下载的 ZIP 文件解压到一个独立的文件夹中。
+
+3. **运行程序**
 - 进入解压后的文件夹，双击 `AudioHub.exe` (或其他可执行文件) 即可启动！
 
 > **注意**: 如果程序无法启动或功能异常 (详见下面的 FFmpeg 提示)，请继续阅读下一节。
