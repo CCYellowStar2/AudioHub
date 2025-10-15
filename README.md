@@ -1,6 +1,6 @@
 # AudioHub 🎵
 
-![Python](https://img.shields.io/badge/python-3.9+-blue.svg)![License](https://img.shields.io/badge/license-MIT-green.svg)![Status](https://img.shields.io/badge/status-active-brightgreen)
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg)![License](https://img.shields.io/badge/license-MIT-green.svg)![Status](https://img.shields.io/badge/status-active-brightgreen)
 
 AudioHub 是一个使用 PyQt5 构建的多功能桌面音频管理工具，旨在提供一个集音频播放、文件管理和格式转换为一体的无缝体验。
 
