@@ -9,7 +9,7 @@ on:
 
 env:
   SPEC_NAME: 'audiohub.spec'
-  APP_NAME: 'AudioHub'
+  APP_NAME: 'audiohub'
 
 jobs:
   build_and_release:
