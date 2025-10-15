@@ -42,56 +42,78 @@ AudioHub 是一个使用 PyQt5 构建的多功能桌面音频管理工具，旨�
 
 ---
 
-## 🚀 快速开始
+## 🚀 安装与运行
 
-### 步骤 1: 获取代码
+我们提供两种方式，请根据您的需求选择。
+
+### 方式一：为普通用户 (下载即用)
+
+这是最简单的方式，无需安装 Python 或任何复杂的环境。
+
+1. **下载程序**
+- 前往 [**Releases 页面**](https://github.com/CCYellowStar2/AudioHub/releases/latest)。
+- 在 "Assets" 部分，下载适用于您操作系统的运行程序 (例如 `AudioHub.exe`)。
+
+2. **运行程序**
+- 进入解压后的文件夹，双击 `AudioHub.exe` (或其他可执行文件) 即可启动！
+
+> **注意**: 如果程序无法启动或功能异常 (详见下面的 FFmpeg 提示)，请继续阅读下一节。
+
+### 方式二：为开发者 (从源码运行)
+
+如果您想查看源码、贡献代码或自行构建，请使用此方法。
 
 ```bash
+# 1. 克隆仓库
 git clone https://github.com/CCYellowStar2/AudioHub.git
 cd AudioHub
-```
 
-### 步骤 2: 安装依赖
-
-建议使用虚拟环境来隔离项目依赖。
-
-```bash
-# 创建虚拟环境
+# 2. (推荐) 创建并激活虚拟环境
 python -m venv venv
-
-# 激活虚拟环境
-# Windows
+# Windows:
 .\venv\Scripts\activate
-# macOS / Linux
+# macOS / Linux:
 source venv/bin/activate
 
-# 使用 pip 安装所有 Python 库
+# 3. 安装依赖库
 pip install -r requirements.txt
-```
 
-### 步骤 3: 运行程序
-
-```bash
+# 4. 运行程序
 python main.py
 ```
 
 ---
 
-## ⚠️ 重要提示：关于 FFmpeg
+## ⚠️ 故障排除：关于 FFmpeg
 
-本程序的核心功能（音频解码和转换）依赖于 **FFmpeg**。
+本程序依赖 **FFmpeg** 来解码和转换音频。即使是打包好的程序，也需要系统能找到 FFmpeg。
 
-`pip` 安装 `av` 库时会尝试捆绑 FFmpeg，但在有些系统上可能不会成功。
+**如果您遇到以下问题：**
+* 程序启动时闪退或报错。
+* 打开音频文件时程序崩溃。
+* 格式转换功能无法使用。
 
-**如果您在运行程序时遇到与 `av`、`ffmpeg` 或 `DLL not found` 相关的错误，说明您的系统缺少 FFmpeg。** 请按照以下步骤解决：
+**这几乎总是因为缺少 FFmpeg。** 请根据您的系统选择解决方案：
 
-#### 解决方案：手动安装 FFmpeg
+### Windows 用户
 
-- **Windows**:
-1. 从官网下载 FFmpeg：[**gyan.dev**](https://www.gyan.dev/ffmpeg/builds/) 或 [**BtbN**](https://github.com/BtbN/FFmpeg-Builds/releases)。
-2. **关键**: 请下载 **shared** 版本（文件名中通常包含 `shared`），而不是 `static` 版本。
-3. 解压下载的文件，找到 `bin` 目录。
-4. 将这个 `bin` 目录的完整路径添加到系统的 **`PATH` 环境变量**中。
+我们提供两种解决方案，**推荐使用简单方法**。
+
+#### 简单方法 (推荐)
+1. 从官网下载 FFmpeg：[**gyan.dev**](https://www.gyan.dev/ffmpeg/builds/)。
+2. **关键**: 请下载 **shared** 版本 (例如 `ffmpeg-release-full-shared.7z`)。
+3. 解压下载的文件，进入 `bin` 目录。
+4. 将 `bin` 目录里的**所有 `.dll` 文件**复制到 `AudioHub.exe` 所在的文件夹中，与 `AudioHub.exe` 放在一起。
+5. 重新启动 AudioHub 即可。
+
+#### 高级方法 (配置环境变量)
+如果您希望系统中其他程序也能使用 FFmpeg，可以将其添加到系统路径中。
+1. 完成上述下载和解压步骤。
+2. 将 `bin` 目录的完整路径 (例如 `C:\ffmpeg\bin`) 添加到系统的 **`PATH` 环境变量**中。
+
+### macOS / Linux 用户
+
+通常使用包管理器安装即可。
 
 - **macOS (使用 Homebrew)**:
 ```bash
@@ -103,8 +125,6 @@ brew install ffmpeg
 sudo apt update
 sudo apt install ffmpeg
 ```
-
-完成上述操作后，请重新启动 AudioHub。
 
 ---
 
