@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: '3.9'
 
-      # 3. (新增) 为 pip 添加缓存，加速后续构建
+      # 3. 为 pip 添加缓存，加速后续构建
       - name: Cache pip packages
         uses: actions/cache@v4
         with:
@@ -38,30 +38,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # 4. (修正) 安装依赖
+      # 4. 安装系统和 Python 依赖
       - name: Install dependencies
         run: |
           # --- 步骤 1: 先安装系统级依赖 ---
-          # 这样后续的 pip install 才能找到它们
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update
-            # 为 PyAudio 添加 portaudio19-dev, 为 PyAV 添加 ffmpeg, 为 PyInstaller 添加 upx
             sudo apt-get install -y portaudio19-dev libasound2-dev ffmpeg upx-ucl
           elif [ "$RUNNER_OS" == "macOS" ]; then
-            brew install ffmpeg upx
+            # ↓↓↓ 核心修改在这里 ↓↓↓
+            brew install portaudio ffmpeg upx
           elif [ "$RUNNER_OS" == "Windows" ]; then
             choco install ffmpeg upx
           fi
 
           # --- 步骤 2: 再安装 Python 依赖 ---
-          # 现在 PyAudio 可以成功编译了
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
         shell: bash
 
       # 5. 使用 PyInstaller 进行打包
-      # 注意：因为 .spec 文件里已经有 upx=True, 这里的 --upx 是可选的，但保留也无妨
       - name: Build with PyInstaller
         run: pyinstaller --noconfirm ${{ env.SPEC_NAME }}
 
