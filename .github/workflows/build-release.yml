@@ -73,12 +73,15 @@ jobs:
           
           if [ "$RUNNER_OS" == "Windows" ]; then
             ARTIFACT_NAME="${{ env.APP_NAME }}-Windows.zip"
-            7z a -tzip $ARTIFACT_NAME "./${OUTPUT_DIR}/*"
+
+            7z a -tzip $ARTIFACT_NAME "./dist/${{ env.APP_NAME }}.exe"
           elif [ "$RUNNER_OS" == "macOS" ]; then
             ARTIFACT_NAME="${{ env.APP_NAME }}-macOS.zip"
+
             ditto -c -k --sequesterRsrc --keepParent "${OUTPUT_DIR}.app" $ARTIFACT_NAME
           else
             ARTIFACT_NAME="${{ env.APP_NAME }}-Linux.tar.gz"
+
             tar -czvf $ARTIFACT_NAME -C $OUTPUT_DIR .
           fi
           
