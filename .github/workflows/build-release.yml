@@ -82,7 +82,7 @@ jobs:
           else
             ARTIFACT_NAME="${{ env.APP_NAME }}-Linux.tar.gz"
 
-            tar -czvf $ARTIFACT_NAME -C $OUTPUT_DIR .
+            tar -czvf $ARTIFACT_NAME -C ./dist ${{ env.APP_NAME }}
           fi
           
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
