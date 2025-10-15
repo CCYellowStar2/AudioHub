@@ -30,7 +30,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       # 3. 为 pip 添加缓存，加速后续构建
       - name: Cache pip packages
@@ -63,7 +63,16 @@ jobs:
 
       # 5. 使用 PyInstaller 进行打包
       - name: Build with PyInstaller
-        run: pyinstaller --noconfirm ${{ env.SPEC_NAME }}
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            # Windows 默认行为正确，无需修改
+            pyinstaller --noconfirm ${{ env.SPEC_NAME }}
+          else
+            # 对于 Linux 和 macOS，使用 --upx-dir 强制启用 UPX
+            # /usr/bin/ 是 upx-ucl 和 brew install upx 的标准安装路径
+            pyinstaller --noconfirm --upx-dir /usr/bin/ ${{ env.SPEC_NAME }}
+          fi
+        shell: bash
 
       # 6. 打包构建结果
       - name: Package the artifact
