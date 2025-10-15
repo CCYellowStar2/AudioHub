@@ -2,108 +2,95 @@
 
 name: 📦 Build and Release
 
-# 触发条件：当一个以 'v' 开头的标签 (例如 v1.0, v1.2.3) 被推送到仓库时触发
 on:
   push:
     tags:
       - 'v*'
 
-# 环境变量，方便统一管理名称
 env:
-  # !!! 请将这里的 '音频管理器2.spec' 修改为您实际的 .spec 文件名 !!!
   SPEC_NAME: 'audiohub.spec'
-  # !!! 请将这里的 'AudioHub' 修改为您打包后希望的程序主文件名 !!!
   APP_NAME: 'AudioHub'
-
 
 jobs:
   build_and_release:
-    # 使用策略矩阵，为三个主流操作系统分别创建一个构建任务
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-
-    # 指定任务运行的虚拟机环境
     runs-on: ${{ matrix.os }}
 
     steps:
-      # 第一步：检出代码
-      # 拉取你的仓库代码到虚拟机中
-      - name:  checkout code
+      # 1. 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 第二步：设置 Python 环境
-      # 安装指定版本的 Python
+      # 2. 设置 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
-      # 第三步：安装系统和 Python 依赖
-      # 这一步根据不同操作系统执行不同的命令来安装 FFmpeg 和 UPX
+      # 3. (新增) 为 pip 添加缓存，加速后续构建
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # 4. (修正) 安装依赖
       - name: Install dependencies
         run: |
-          # 安装 Python 依赖库
-          pip install -r requirements.txt
-          pip install pyinstaller
-
-          # 根据操作系统安装系统级依赖 (FFmpeg & UPX)
+          # --- 步骤 1: 先安装系统级依赖 ---
+          # 这样后续的 pip install 才能找到它们
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update
-            sudo apt-get install -y ffmpeg upx-ucl
+            # 为 PyAudio 添加 portaudio19-dev, 为 PyAV 添加 ffmpeg, 为 PyInstaller 添加 upx
+            sudo apt-get install -y portaudio19-dev libasound2-dev ffmpeg upx-ucl
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install ffmpeg upx
           elif [ "$RUNNER_OS" == "Windows" ]; then
-            # 在 Windows runner 上，使用 Chocolatey 包管理器
             choco install ffmpeg upx
           fi
+
+          # --- 步骤 2: 再安装 Python 依赖 ---
+          # 现在 PyAudio 可以成功编译了
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
         shell: bash
 
-      # 第四步：使用 PyInstaller 和 UPX 进行打包
-      # --noconfirm: 覆盖旧的构建文件，不需确认
-      # --upx: 启用 UPX 压缩
-      - name: Build with PyInstaller and UPX
-        run: pyinstaller --noconfirm --upx ${{ env.SPEC_NAME }}
+      # 5. 使用 PyInstaller 进行打包
+      # 注意：因为 .spec 文件里已经有 upx=True, 这里的 --upx 是可选的，但保留也无妨
+      - name: Build with PyInstaller
+        run: pyinstaller --noconfirm ${{ env.SPEC_NAME }}
 
-      # 第五步：打包构建结果以便上传
-      # 将 dist 目录下的程序打包成 .zip 或 .tar.gz
+      # 6. 打包构建结果
       - name: Package the artifact
         id: package
         run: |
-          # 定义输出目录和最终文件名
           OUTPUT_DIR="dist/${{ env.APP_NAME }}"
           
           if [ "$RUNNER_OS" == "Windows" ]; then
-            # Windows: 输出 .zip 格式
             ARTIFACT_NAME="${{ env.APP_NAME }}-Windows.zip"
             7z a -tzip $ARTIFACT_NAME "./${OUTPUT_DIR}/*"
           elif [ "$RUNNER_OS" == "macOS" ]; then
-            # macOS: 输出 .zip 格式, .app 文件夹需要特殊处理
             ARTIFACT_NAME="${{ env.APP_NAME }}-macOS.zip"
-            # 使用 ditto 来正确打包 .app
             ditto -c -k --sequesterRsrc --keepParent "${OUTPUT_DIR}.app" $ARTIFACT_NAME
           else
-            # Linux: 输出 .tar.gz 格式
             ARTIFACT_NAME="${{ env.APP_NAME }}-Linux.tar.gz"
             tar -czvf $ARTIFACT_NAME -C $OUTPUT_DIR .
           fi
           
-          # 将最终的文件名输出，供后续步骤使用
           echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
         shell: bash
 
-      # 第六步：上传构建产物到 Release
-      # 使用社区维护的 svenstaro/upload-release-action 动作
+      # 7. 上传构建产物到 Release
       - name: Upload Release Asset
         uses: svenstaro/upload-release-action@v2
         with:
-          # GITHUB_TOKEN 是 GitHub 自动提供的，用于授权
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          # 从上一步获取要上传的文件路径
           file: ${{ steps.package.outputs.artifact_name }}
-          # 在 Release 页面上显示的文件名
           asset_name: ${{ steps.package.outputs.artifact_name }}
-          # 上传到当前触发工作流的标签所对应的 Release
           tag: ${{ github.ref }}
-          # 如果文件已存在，则覆盖
           overwrite: true
